@@ -1,0 +1,49 @@
+"""Train a model and write a submission file.
+
+The competition metric is RMSE between log(predicted) and log(actual) sale
+price, so the model is trained on log1p(SalePrice) and predictions are mapped
+back with expm1. Reported CV RMSE is therefore the leaderboard metric.
+
+Usage: uv run python main.py [model=...] [params.<model>.<param>=...] [cv.n_folds=...]
+"""
+
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from omegaconf import OmegaConf
+from sklearn.model_selection import KFold, cross_val_score
+
+from src.config import load_config
+from src.pipeline import TARGET, build_pipeline
+
+def main() -> None:
+    cfg = load_config()
+    print(OmegaConf.to_yaml(cfg))
+
+    data_dir = Path(cfg.data_dir)
+    train = pd.read_csv(data_dir / "train.csv")
+    test = pd.read_csv(data_dir / "test.csv")
+
+    X = train.drop(columns=[TARGET])
+    y = np.log1p(train[TARGET])
+
+    pipeline = build_pipeline(cfg)
+
+    cv = KFold(n_splits=cfg.cv.n_folds, shuffle=True, random_state=cfg.seed)
+    scores = cross_val_score(pipeline, X, y, cv=cv, scoring="neg_root_mean_squared_error")
+    rmse = -scores
+    print(f"CV RMSE (log scale): {rmse.mean():.4f} (+/- {rmse.std():.4f})")
+
+    pipeline.fit(X, y)
+    predictions = np.expm1(pipeline.predict(test))
+
+    out = Path(cfg.submission_path)
+    out.parent.mkdir(exist_ok=True)
+    submission = pd.DataFrame({"Id": test["Id"], "SalePrice": predictions})
+    submission.to_csv(out, index=False)
+    print(f"Submission written to {out}")
+
+
+if __name__ == "__main__":
+    main()
