@@ -1,5 +1,5 @@
 # Data and submissions (downloaded from Kaggle, not versioned)
-data/
+# data/
 submissions/
 
 # CatBoost training logs
