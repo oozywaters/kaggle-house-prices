@@ -49,7 +49,7 @@ def build_preprocessor() -> ColumnTransformer:
 def build_model(cfg):
     if cfg.model not in MODELS:
         raise ValueError(f"unknown model {cfg.model!r}, choose from {sorted(MODELS)}")
-    params = OmegaConf.to_container(cfg.params).get(cfg.model, {})
+    params = OmegaConf.to_container(cfg.params, resolve=True).get(cfg.model, {})
     return MODELS[cfg.model](**params)
 
 def build_pipeline(cfg) -> Pipeline:
