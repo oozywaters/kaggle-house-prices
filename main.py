@@ -19,7 +19,9 @@ from src.pipeline import TARGET, build_pipeline
 
 def main() -> None:
     cfg = load_config()
-    print(OmegaConf.to_yaml(cfg))
+    params = OmegaConf.to_container(cfg.params, resolve=True).get(cfg.model, {})
+    details = " ".join(f"{k}={v}" for k, v in params.items())
+    print(f"model={cfg.model} | cv={cfg.cv.n_folds} folds, seed={cfg.seed} | {details}")
 
     data_dir = Path(cfg.data_dir)
     train = pd.read_csv(data_dir / "train.csv")
@@ -33,7 +35,8 @@ def main() -> None:
     cv = KFold(n_splits=cfg.cv.n_folds, shuffle=True, random_state=cfg.seed)
     scores = cross_val_score(pipeline, X, y, cv=cv, scoring="neg_root_mean_squared_error")
     rmse = -scores
-    print(f"CV RMSE (log scale): {rmse.mean():.4f} (+/- {rmse.std():.4f})")
+    print(f"folds: {' '.join(f'{s:.4f}' for s in rmse)}")
+    print(f"CV RMSE (log scale): {rmse.mean():.4f} ± {rmse.std():.4f}")
 
     pipeline.fit(X, y)
     predictions = np.expm1(pipeline.predict(test))

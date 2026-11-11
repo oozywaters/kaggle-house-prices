@@ -13,6 +13,7 @@ from sklearn.tree import DecisionTreeRegressor
 from xgboost import XGBRegressor
 
 from src.features import HousePricesFeatures
+from src.nn import TorchMLPRegressor
 
 MODELS = {
     "linreg": LinearRegression,
@@ -25,6 +26,7 @@ MODELS = {
     "catboost": CatBoostRegressor,
     "lightgbm": LGBMRegressor,
     "xgboost": XGBRegressor,
+    "mlp": TorchMLPRegressor,
 }
 
 TARGET = "SalePrice"

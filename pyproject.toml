@@ -12,6 +12,7 @@ dependencies = [
     "catboost>=1.2.10",
     "lightgbm>=4.7.0",
     "xgboost>=3.2.0",
+    "torch>=2.15.0",
 ]
 
 [dependency-groups]

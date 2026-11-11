@@ -5,7 +5,7 @@ submission_path: submissions/${model}_submission.csv
 cv:
   n_folds: 5
 
-model: catboost
+model: mlp
 
 params:
   linreg: {}
@@ -41,3 +41,15 @@ params:
     n_estimators: 500
     learning_rate: 0.05
     random_state: 42
+  mlp:
+    hidden_sizes: [256, 128]
+    activation: relu
+    batchnorm: true
+    dropout: 0.2
+    optimizer: adamw
+    lr: 0.001
+    weight_decay: 0.0001
+    batch_size: 64
+    n_epochs: 100
+    scheduler: cosine
+    seed: 42
