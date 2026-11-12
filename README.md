@@ -1,6 +1,6 @@
 # Kaggle House Prices
 
-Boilerplate for the [House Prices: Advanced Regression Techniques](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/overview) competition.
+ML pipeline for the [House Prices: Advanced Regression Techniques](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/overview) competition.
 
 ## Setup
 
@@ -12,13 +12,13 @@ uv sync
 
 ## Get the data
 
-Set up [Kaggle API credentials](https://www.kaggle.com/docs/api) (`~/.kaggle/kaggle.json`), accept the competition rules on the Kaggle website, then:
+The data is committed to the repo, so this step is optional — only needed to refresh it. Set up [Kaggle API credentials](https://www.kaggle.com/docs/api) (`~/.kaggle/kaggle.json`), accept the competition rules on the Kaggle website, then:
 
 ```sh
 uv run python src/download_data.py
 ```
 
-This downloads `train.csv`, `test.csv`, `data_description.txt`, and `sample_submission.csv` into `data/` (git-ignored).
+This downloads `train.csv`, `test.csv`, `data_description.txt`, and `sample_submission.csv` into `data/`.
 
 ## Train
 
@@ -35,7 +35,15 @@ uv run python main.py model=ridge
 uv run python main.py model=lightgbm params.lightgbm.n_estimators=800 cv.n_folds=10
 ```
 
-Available models: `linreg`, `ridge`, `lasso`, `elasticnet`, `knn`, `decision_tree`, `random_forest`, `catboost`, `lightgbm`, `xgboost`.
+Available models: `linreg` (baseline), `ridge`, `lasso`, `elasticnet`, `knn`, `decision_tree`, `random_forest`, `catboost`, `lightgbm`, `xgboost`, `mlp` (PyTorch).
+
+## Compare models
+
+```sh
+uv run python compare.py
+```
+
+Cross-validates every model and prints a ranked table. Best so far: **catboost, CV RMSE 0.1223**. Full analysis in `notebooks/eda.ipynb`.
 
 ## Submit
 
@@ -47,14 +55,16 @@ uv run kaggle competitions submit -c house-prices-advanced-regression-techniques
 
 ```
 ├── main.py                # entry point: load config, train with CV, write submission
+├── compare.py             # cross-validate all models, print ranked table
 ├── configs/
 │   └── config.yaml        # experiment settings (model, hyperparams, CV)
 ├── src/
 │   ├── config.py          # config schema + loader (OmegaConf)
 │   ├── download_data.py   # fetch competition data via Kaggle API
 │   ├── features.py        # missing-value cleaning, ordinal encoding, feature engineering
+│   ├── nn.py              # PyTorch MLP wrapped as a sklearn regressor
 │   └── pipeline.py        # preprocessing + model pipeline
-├── notebooks/             # exploratory analysis
-├── data/                  # raw data (git-ignored)
+├── notebooks/             # EDA + model comparison (eda.ipynb)
+├── data/                  # raw competition data
 └── submissions/           # generated submissions (git-ignored)
 ```
