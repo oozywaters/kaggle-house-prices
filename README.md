@@ -26,7 +26,7 @@ This downloads `train.csv`, `test.csv`, `data_description.txt`, and `sample_subm
 uv run python main.py
 ```
 
-Trains the model from `configs/config.yaml` (CatBoost by default) on `log1p(SalePrice)`, prints K-fold CV RMSE on the log scale (the leaderboard metric), and writes `submissions/<model>_submission.csv`.
+Trains the model from `configs/config.yaml` (CatBoost by default) on `log1p(SalePrice)`, prints stratified K-fold CV RMSE on the log scale (the leaderboard metric), and writes `submissions/<model>_submission.csv`. Folds are stratified on binned price so each fold has a similar price mix.
 
 Any config field can be overridden from the CLI:
 
@@ -35,7 +35,7 @@ uv run python main.py model=ridge
 uv run python main.py model=lightgbm params.lightgbm.n_estimators=800 cv.n_folds=10
 ```
 
-Available models: `linreg` (baseline), `ridge`, `lasso`, `elasticnet`, `knn`, `decision_tree`, `random_forest`, `catboost`, `lightgbm`, `xgboost`, `mlp` (PyTorch).
+Available models: `linreg` (baseline), `ridge`, `lasso`, `elasticnet`, `knn`, `decision_tree`, `random_forest`, `catboost`, `lightgbm`, `xgboost`, `mlp` (PyTorch), and ensembles `voting`, `stacking_linreg`, `stacking_ridge`.
 
 ## Compare models
 

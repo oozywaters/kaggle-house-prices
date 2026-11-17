@@ -12,10 +12,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from omegaconf import OmegaConf
-from sklearn.model_selection import KFold, cross_val_score
+from sklearn.model_selection import cross_val_score
 
 from src.config import load_config
-from src.pipeline import TARGET, build_pipeline
+from src.pipeline import TARGET, build_pipeline, make_folds
 
 def main() -> None:
     cfg = load_config()
@@ -32,8 +32,8 @@ def main() -> None:
 
     pipeline = build_pipeline(cfg)
 
-    cv = KFold(n_splits=cfg.cv.n_folds, shuffle=True, random_state=cfg.seed)
-    scores = cross_val_score(pipeline, X, y, cv=cv, scoring="neg_root_mean_squared_error")
+    folds = make_folds(X, y, cfg)
+    scores = cross_val_score(pipeline, X, y, cv=folds, scoring="neg_root_mean_squared_error")
     rmse = -scores
     print(f"folds: {' '.join(f'{s:.4f}' for s in rmse)}")
     print(f"CV RMSE (log scale): {rmse.mean():.4f} ± {rmse.std():.4f}")
