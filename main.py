@@ -1,8 +1,8 @@
-"""Train a model and write a submission file.
+"""Train one model with cross-validation and write a Kaggle submission.
 
-The competition metric is RMSE between log(predicted) and log(actual) sale
-price, so the model is trained on log1p(SalePrice) and predictions are mapped
-back with expm1. Reported CV RMSE is therefore the leaderboard metric.
+We train on log1p(SalePrice) because that's what the leaderboard scores, then
+turn predictions back into dollars with expm1. So the CV RMSE here matches the
+leaderboard metric.
 
 Usage: uv run python main.py [model=...] [params.<model>.<param>=...] [cv.n_folds=...]
 """

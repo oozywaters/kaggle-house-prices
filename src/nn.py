@@ -6,8 +6,7 @@ from scipy import sparse
 from sklearn.base import BaseEstimator, RegressorMixin
 from torch import nn
 
-# single-threaded torch avoids a segfault from the duplicate OpenMP runtimes
-# that torch and catboost/lightgbm/xgboost each bundle on macOS
+# one thread: avoids a macOS crash when torch and the boosting libs are both loaded
 torch.set_num_threads(1)
 
 ACTIVATIONS = {
@@ -69,7 +68,7 @@ class TorchMLPRegressor(BaseEstimator, RegressorMixin):
     def fit(self, X, y):
         torch.manual_seed(self.seed)
         features = self._to_tensor(X)
-        # center target: net learns residuals, not a big offset
+        # center the target so the net predicts the small leftover, not ~12
         self.y_mean_ = float(np.mean(y))
         targets = torch.as_tensor(np.asarray(y, dtype=np.float32) - self.y_mean_)
 
@@ -85,7 +84,7 @@ class TorchMLPRegressor(BaseEstimator, RegressorMixin):
         loss_fn = nn.MSELoss()
 
         dataset = torch.utils.data.TensorDataset(features, targets)
-        # drop_last: no size-1 batches (break BatchNorm)
+        # drop a leftover size-1 batch — BatchNorm needs at least 2 rows
         loader = torch.utils.data.DataLoader(
             dataset, batch_size=self.batch_size, shuffle=True, drop_last=True
         )

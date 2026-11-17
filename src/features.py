@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
-# Categorical columns where NA means "feature absent", not missing data.
+# NA here means "no such feature", not missing -> fill with "None"
 NONE_CATEGORICAL = [
     "Alley", "MasVnrType", "BsmtQual", "BsmtCond", "BsmtExposure",
     "BsmtFinType1", "BsmtFinType2", "FireplaceQu", "GarageType",
@@ -10,20 +10,20 @@ NONE_CATEGORICAL = [
     "MiscFeature",
 ]
 
-# Numeric columns where NA means "none of this feature" -> 0.
+# NA here means "none of it" -> fill with 0
 ZERO_NUMERIC = [
     "MasVnrArea", "GarageYrBlt", "GarageCars", "GarageArea", "BsmtFinSF1",
     "BsmtFinSF2", "BsmtUnfSF", "TotalBsmtSF", "BsmtFullBath", "BsmtHalfBath",
 ]
 
-# Ordinal quality scales shared by many condition/quality columns.
+# quality grades as ordered numbers: Po < Fa < TA < Gd < Ex
 QUALITY_MAP = {"None": 0, "Po": 1, "Fa": 2, "TA": 3, "Gd": 4, "Ex": 5}
 QUALITY_COLUMNS = [
     "ExterQual", "ExterCond", "BsmtQual", "BsmtCond", "HeatingQC",
     "KitchenQual", "FireplaceQu", "GarageQual", "GarageCond", "PoolQC",
 ]
 
-# MSSubClass is coded as integers but is categorical.
+# MSSubClass is a number but really a category code
 AS_STRING = ["MSSubClass"]
 
 def fill_none_and_zero(df: pd.DataFrame) -> pd.DataFrame:
@@ -60,14 +60,11 @@ def add_engineered(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 class HousePricesFeatures(BaseEstimator, TransformerMixin):
-    """Clean missing values, encode ordinal qualities, add engineered features.
+    """Clean NaNs, turn quality grades into numbers, add a few new features.
 
-    NA in many columns means "feature absent" rather than unknown (e.g. PoolQC
-    NA = no pool), so those are filled with "None"/0 before downstream imputation.
-    LotFrontage is imputed with the per-neighborhood median learned on the
-    training folds only, so CV never leaks across the split. Quality grades
-    (Ex/Gd/TA/Fa/Po) become an ordinal 0-5 scale. Decisions documented in
-    notebooks/eda.ipynb.
+    Most NaNs mean "no such feature" (PoolQC NA = no pool), so they're filled
+    with "None"/0, not guessed. LotFrontage is filled with the median of its
+    Neighborhood, learned per CV fold so no data leaks. See notebooks/eda.ipynb.
     """
 
     def fit(self, X: pd.DataFrame, y=None):
